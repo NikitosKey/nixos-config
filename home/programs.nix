@@ -5,8 +5,10 @@
 		./programs/nixvim.nix
 		./programs/git.nix
 		./programs/hyprland.nix
-		./programs/hyprpanel.nix
+    ./programs/hyprlock.nix
 		./programs/rofi.nix
-    ./programs/alacritty.nix
+    ./programs/kitty.nix
+    ./programs/waybar.nix
+    ./programs/wlogout.nix
 	];
 }

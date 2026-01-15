@@ -1,190 +1,200 @@
 # ~/nixos-config/home-manager/desktop/waybar/waybar.nix
-
-{ pkgs, lib, ... }:
-
-let
-  # УЛУЧШЕННЫЙ СКРИПТ КОТИКА (с анимацией бега)
-  runcatScript = pkgs.writeShellScript "runcat-animated" ''
-    #!/usr/bin/env bash
-    frames_slow=("🐈" "🐈‍⬛")
-    frames_medium=("🐆" "🐅")
-    frames_fast=("🐉" "🔥")
-    icon_sleep="😴"
-
-    # Вечный цикл для плавной анимации
-    while true; do
-      load=$(grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)}' | awk '{print int($1)}')
-
-      local frames_current
-      local speed=0.5
-
-      if [ "$load" -lt 10 ]; then
-        icon=$icon_sleep
-        speed=2 # Спит дольше
-      elif [ "$load" -lt 30 ]; then
-        frames_current=("''${frames_slow[@]}")
-        speed=0.5
-      elif [ "$load" -lt 60 ]; then
-        frames_current=("''${frames_medium[@]}")
-        speed=0.3
-      else
-        frames_current=("''${frames_fast[@]}")
-        speed=0.15
-      fi
-
-      if [ "$load" -ge 10 ]; then
-        counter_file="/tmp/runcat_counter"
-        [ ! -f "$counter_file" ] && echo 0 > "$counter_file"
-        counter=$(cat "$counter_file")
-        icon="''${frames_current[$counter]}"
-        counter=$(( (counter + 1) % ''${#frames_current[@]} ))
-        echo $counter > "$counter_file"
-      fi
-      
-      echo "{\"text\": \"$icon\", \"tooltip\": \"CPU Load: $load%\"}"
-      sleep $speed
-    done
-  '';
-
-  calendarScript = pkgs.writeShellScript "waybar-calendar-events" ''
-    #!/usr/bin/env bash
-    # Заголовок для сегодняшнего дня
-    tooltip="<big> Сегодня, $(date +"%d %B")</big>\n"
-    
-    # Получаем события на сегодня с помощью khal и форматируем их
-    events=$(khal list --format "<b>{start-time}</b> - {title}" today)
-    
-    if [ -n "$events" ]; then
-      tooltip+="$events"
-    else
-      tooltip+="<span color='#888'>Нет событий на сегодня</span>"
-    fi
-
-    # Выводим JSON, который Waybar сможет прочитать
-    echo "{\"text\": \"$(date "+%H:%M")\", \"tooltip\": \"$tooltip\"}"
-  '';
-
-in
-{
+{ pkgs, config, ... }: {
   programs.waybar = {
     enable = true;
-    package = pkgs.waybar; 
-    
+    style = ''
+      * {
+          font-size: 13px; 
+          min-height: 0;
+          border-radius: 20px; /* Скругление */
+          font-weight: 600;
+      }
+      /* Делаем панель прозрачной или полупрозрачной */
+      window#waybar {
+        background-color: rgba(0,0,0,0); 
+      }
+
+      /* Общий стиль для модулей-островков */
+      .modules-left, .modules-right {
+        background-color: @base00; /* Цвет из темы Stylix */
+        border: 1px solid @base0D; /* Акцентная рамка */
+        padding: 2px 6px;
+        margin-top: 0px; /* Отступ сверху */
+        margin-left: 4px;
+        margin-right: 4px;
+      }
+
+      #custom-dashboard {
+        background-color: @base0D; /* Синий цвет из Kanagawa */
+        color: @base00; /* Цвет фона темы для контраста */
+        padding: 0 8px;
+        margin-top: 2px;
+        margin-left: 2px;
+        margin-right: 2px; /* Слипаем с воркспейсами или оставляем отступ */
+      }
+      
+      /* Кнопки справа */
+      #pulseaudio, #network, #bluetooth, #battery, #clock, #custom-notification, #tray{
+        padding: 0 8px;
+        background-color: transparent;
+        margin: 0 2px;
+      }
+
+      /* Контейнер воркспейсов (островок) */
+      #workspaces {
+          background: transparent; 
+          /* Или @base00, если хочешь, чтобы весь блок был темным */
+          margin: 2px 4px;
+          padding: 0;
+      }
+
+      /* Кнопка с цифрой (неактивная) */
+      #workspaces button {
+          padding: 0 8px;       /* Воздух вокруг цифры */
+          margin: 0 2px;        /* Расстояние между цифрами */
+          border-radius: 6px;   /* Скругление квадратика */
+          color: @base05;       /* Цвет текста (серый/белый) */
+          background: transparent; /* Прозрачный фон */
+          
+          /* УБИРАЕМ ВСЕ ГРАНИЦЫ И ТЕНИ */
+          border: none;
+          box-shadow: none;
+          text-shadow: none;
+          transition: all 0.2s ease; /* Плавная анимация */
+      }
+
+      /* При наведении мышкой */
+      #workspaces button:hover {
+          background-color: @base02; /* Чуть светлее фон */
+          color: @base05;
+      }
+
+      /* АКТИВНЫЙ воркспейс (Цифра) */
+      #workspaces button.active {
+          color: @base00;       /* Текст становится темным (контраст) */
+          background-color: @base0D; /* Фон становится акцентным (синим/лиловым из темы) */
+          
+          /* Гарантированно убираем улыбку/подчеркивание */
+          border: none; 
+          border-bottom: none;
+          box-shadow: none;
+          
+          /* Если цифра кажется "зажатой", можно чуть увеличить padding тут */
+          /* padding: 0 10px; */
+      }
+      
+      /* Если воркспейс срочный (кто-то тегает) */
+      #workspaces button.urgent {
+          background-color: @base08; /* Красный */
+          color: @base00;
+      }
+      
+      #pulseaudio:hover, #network:hover, #bluetooth:hover {
+        background-color: @base02;
+        border-radius: 8px;
+      }
+    '';
+
     settings = {
       mainBar = {
         layer = "top";
         position = "top";
-        height = 44; 
+        height = 24;
         spacing = 0;
         
-        # --- РАСПОЛОЖЕНИЕ ---
-        modules-left = [ "hyprland/workspaces" "custom/runcat" ];
-        modules-center = [ ]; # <-- ЦЕНТР ТЕПЕРЬ ПУСТОЙ
-        modules-right = [ "tray" "group/hardware" "battery" "custom/notification" "clock" ];
+        modules-left = [ "custom/dashboard" "hyprland/workspaces" ];
+        modules-center = [ ];
+        modules-right = [ "tray" "group/hardware" "clock" "custom/notification" ];
 
-        # --- МОДУЛИ ---
+        "custom/dashboard" = {
+          format = " ";
+          on-click = "rofi-power";
+          tooltip = false;
+        };
 
         "hyprland/workspaces" = {
-          format = "{name}";
           on-click = "activate";
-          persistent-workspaces = { "*" = 5; };
         };
-
-        "custom/runcat" = {
-          exec = "${runcatScript}"; # <-- Запускаем скрипт с вечным циклом
-          return-type = "json";
-          format = "{}";
-        };
-
-        "tray" = { icon-size = 18; spacing = 10; };
 
         "group/hardware" = {
-            orientation = "horizontal";
-            modules = [ "network" "bluetooth" "pulseaudio" ];
+          orientation = "horizontal";
+          modules = [ "pulseaudio" "battery" ];
         };
 
         "pulseaudio" = {
           format = "{icon}";
-          format-muted = "";
-          format-icons = { default = ["" "" ""]; };
-          tooltip-format = "Громкость: {volume}%";
-          on-click = "gnome-control-center sound"; # <-- ИЗМЕНЕНО
+          format-muted = "";
+          format-icons = {
+            default = ["" "" ""];
+          };
+          on-click = "wpctl set-mute @DEFAULT_SINK@ toggle";
+          on-click-right = "pavucontrol";
+          tooltip-format = "{volume}%";
         };
 
         "network" = {
           format-wifi = "";
-          format-ethernet = "";
-          format-disconnected = "⚠";
-          tooltip-format = "{ifname}: {essid} ({signalStrength}%)";
-          on-click = "gnome-control-center wifi"; # <-- ИЗМЕНЕНО
+          format-ethernet = "󰈀";
+          format-disconnected = "";
+          tooltip-format = "{essid} ({signalStrength}%)";
+          on-click = "nm-connection-editor"; 
         };
 
         "bluetooth" = {
-          format = "";
-          format-disabled = ""; 
-          format-connected = "";
-          tooltip-format-connected = "Подключено: {device_alias}";
-          on-click = "gnome-control-center bluetooth"; # <-- ИЗМЕНЕНО
+          format = "";
+          format-disabled = "󰂲";
+          format-connected = "󰂱";
+          on-click = "blueman-manager";
         };
 
         "battery" = {
-            states = { good = 95; warning = 30; critical = 15; };
-            format = "{icon}   {capacity}%";
-            format-charging = "   {capacity}%";
-            format-icons = ["" "" "" "" ""];
-            on-click = "gnome-control-center power"; # <-- ИЗМЕНЕНО
+          states = { warning = 30; critical = 15; };
+          format = "{icon} {capacity}%";
+          format-charging = "󰂄";
+          format-icons = ["󰁺" "󰁻" "󰁼" "󰁽" "󰁾" "󰁿" "󰂀" "󰂁" "󰂂" "󰁹"];
+        };
+
+        "upower"= {
+        #"icon-size": 20,
+          hide-if-empty = true;
+          tooltip = true;
+          tooltip-spacing = 20;
+        };
+
+        "clock" = {
+          format = "{:%H:%M}";
+          tooltip-format = "<tt>{calendar}</tt>";
+          actions = {
+             on-click-right = "gnome-calendar";
+          };
+        };
+        
+        "tray" = {
+          spacing = 8;
         };
 
         "custom/notification" = {
-          # ... ваш конфиг без изменений ...
+          tooltip = false;
+          format = "{icon}";
+          format-icons = {
+            notification = "<span foreground='red'><sup></sup></span>";
+            none = "";
+            dnd-notification = "<span foreground='red'><sup></sup></span>";
+            dnd-none = "";
+            inhibited-notification = "<span foreground='red'><sup></sup></span>";
+            inhibited-none = "";
+            dnd-inhibited-notification = "<span foreground='red'><sup></sup></span>";
+            dnd-inhibited-none = "";
+          };
           return-type = "json";
           exec-if = "which swaync-client";
           exec = "swaync-client -swb";
           on-click = "swaync-client -t -sw";
           on-click-right = "swaync-client -d -sw";
-        };
-
-        # --- ПОЛНОСТЬЮ ПЕРЕРАБОТАННЫЙ МОДУЛЬ ЧАСОВ ---
-        "clock" = {
-          exec = "${calendarScript}"; # <-- Используем наш скрипт для вывода
-          return-type = "json";
-          interval = 60; # Обновляем события раз в минуту
-          on-click = "gnome-calendar"; # <-- Открываем полноценный календарь
+          escape = true;
         };
       };
     };
-
-    # --- CSS ---
-    style = ''
-      /* ... все ваши @define-color ... */
-      @define-color bg #1e1e2e;
-      @define-color text #cdd6f4;
-      /* ... и так далее ... */
-
-      * { /* ... */ }
-      window#waybar { /* ... */ }
-
-      #workspaces, #custom-runcat, #tray, #hardware, #battery, #clock, #custom-notification {
-        /* ... общие стили для "капсул" ... */
-        background: @surface;
-        border-radius: 20px;
-        margin-top: 4px;
-        margin-bottom: 4px;
-        padding-left: 15px;
-        padding-right: 15px;
-      }
-      
-      /* ... стили для #workspaces, #custom-runcat, #tray ... */
-
-      /* --- ИСПРАВЛЕНИЕ НАЛОЖЕНИЯ --- */
-      #custom-notification {
-        margin-right: 10px; /* <-- ДОБАВЛЕНО: Создаем отступ справа */
-        padding-left: 12px;
-        padding-right: 15px;
-        color: @blue;
-      }
-      
-      /* ... остальные ваши стили ... */
-    '';
   };
 }
+

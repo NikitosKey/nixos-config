@@ -13,7 +13,7 @@
     ];
     shellAliases = {
       # Обновленный алиас для флейков
-      rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#nixos";
+      rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#macbookpro";
       update = "nix flake update ~/nixos-config";
       gc = "sudo nix-collect-garbage -d";
     };

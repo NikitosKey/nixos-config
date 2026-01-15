@@ -6,11 +6,6 @@
 
     globals.mapleader = " ";
 
-    colorschemes.catppuccin = {
-     enable = true;
-     settings.flavour = "mocha"; 
-    };
-
     clipboard = {
       register = "unnamedplus";
       providers.wl-copy.enable = true;
@@ -278,7 +273,9 @@
           FocusOnToggle = true;
         };
       };
-    };
+
+      markdown-preview.enable = true;
+    }; 
 
     # Общие горячие клавиши
     keymaps = [

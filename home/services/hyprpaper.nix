@@ -1,9 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  # Создаем переменную с путем к обоям.
-  # Важно: путь без кавычек! Nix проверит его существование и скопирует в Store.
-  wallpaper = ../../assets/wallpapers/nixos-wallpaper-catppuccin-mocha.svg;
+  wallpaper = ../../assets/wallpapers/wallpaper.png;
 in
 {
   services.hyprpaper = {
@@ -16,7 +14,7 @@ in
       preload = [ "${wallpaper}" ];
 
       # То же самое для установки обоев
-      wallpaper = [ ",contain:${wallpaper}" ];
+      wallpaper = [ ",${wallpaper}" ];
     };
   };
 }
