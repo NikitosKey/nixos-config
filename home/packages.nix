@@ -1,43 +1,52 @@
 # ~/nixos-config/home-manager/packages.nix
 { inputs, pkgs, ... }:
-
-{ home.packages = with pkgs; [
-    # Терминал
-    ueberzugpp
+let
+  pkgs-x86 = import inputs.nixpkgs {
+    system = "x86_64-linux";
+    config.allowUnfree = true;
+  };
+in
+{ 
+  home.packages = with pkgs; ([
     # Утилиты
-    fastfetch
-    grc
-    ncdu
-    htop
-    btop
-		ripgrep
+    unstable.fastfetch
+    unstable.grc
+    unstable.ncdu
+    unstable.btop
+		unstable.ripgrep
 		grimblast
     swappy
     grim
-    slurp
     tmux
-    tree
-    yazi
+    unstable.tree
+    unstable.yazi
     zip
     unzip
     gnutar
     gzip
+    pavucontrol
+    networkmanagerapplet 
+    blueman         
+    swaynotificationcenter
+    unstable.gnome-calendar
 		# Разработка
-    lazygit
-		docker
-    podman
-		lazydocker
+    unstable.lazygit
+		unstable.lazydocker
     # Приложения
-    imv
-    firefox
-    v2rayn
-    telegram-desktop
-    obs-studio
-    nautilus
-		yandex-music
-    obsidian
+    unstable.firefox
+    unstable.telegram-desktop
+    unstable.obs-studio
+    unstable.nautilus
+		unstable.yandex-music
+    unstable.obsidian
 		dorion
-		libreoffice
+		unstable.libreoffice
+    unstable.mpv
+    unstable.gimp
+    unstable.krita
+    unstable.inkscape
+    unstable.prismlauncher
+    unstable.reaper
     # Шрифты
     nerd-fonts.hack
 		nerd-fonts.jetbrains-mono
@@ -50,7 +59,6 @@
     libsForQt5.qt5ct
     kdePackages.qt6ct
 		kdePackages.qtstyleplugin-kvantum
-		adwaita-icon-theme
-    hicolor-icon-theme
-  ];
+  ]) ++ [ 
+];
 }

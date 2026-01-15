@@ -58,7 +58,43 @@ let
   '';
 in
 {
-  home.packages = [ rofi-clipboard ];
+  home.packages = [ 
+    rofi-clipboard
+    (pkgs.writeShellScriptBin "rofi-power" ''
+      # Опции меню
+      lock=" Lock"
+      suspend="󰤄 Suspend"
+      logout="󰍃 Logout"
+      reboot=" Reboot"
+      shutdown=" Shutdown"
+      
+      # Формируем список
+      options="$lock\n$suspend\n$logout\n$reboot\n$shutdown"
+      
+      # Запускаем Rofi и читаем выбор
+      # -p "Power" задает заголовок
+      selected=$(echo -e "$options" | rofi -dmenu -i -p "Power Control")
+      
+      # Выполняем команду
+      case $selected in
+        "$lock")
+          hyprlock
+          ;;
+        "$suspend")
+          systemctl suspend
+          ;;
+        "$logout")
+          loginctl terminate-user $USER
+          ;;
+        "$reboot")
+          systemctl reboot
+          ;;
+        "$shutdown")
+          systemctl poweroff
+          ;;
+      esac
+    '')
+  ];
 
   programs.rofi = {
     enable = true;
@@ -87,7 +123,7 @@ in
         bg = mkLiteral "#1e1e2e";
         fg = mkLiteral "#cdd6f4";
         accent = mkLiteral "#89b4fa";
-        background-color = mkLiteral "transparent";
+        # background-color = mkLiteral "transparent";
         text-color = mkLiteral "@fg";
         margin = 0;
         padding = 0;
@@ -95,9 +131,9 @@ in
 
       "window" = {
         width = mkLiteral "600px";
-        background-color = mkLiteral "@bg";
+        #background-color = mkLiteral "@bg";
         border = mkLiteral "2px";
-        border-color = mkLiteral "@accent";
+        # border-color = mkLiteral "@accent";
         border-radius = mkLiteral "12px";
       };
 
@@ -107,8 +143,8 @@ in
       };
 
       "element selected" = {
-        background-color = mkLiteral "#313244";
-        text-color = mkLiteral "@accent";
+        # background-color = mkLiteral "#313244";
+        # text-color = mkLiteral "@accent";
       };
 
       "element-icon" = {

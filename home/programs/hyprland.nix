@@ -1,7 +1,9 @@
-# ~/nixos-config/home-manager/desktop/hyprland/hyprland.nix { inputs, pkgs, ... }:
+#  /nixos-config/home-manager/desktop/hyprland/hyprland.nix { inputs, pkgs, ... }:
 {
   wayland.windowManager.hyprland  = {
-    enable = true; systemd.enable = true; settings = {
+    enable = true; 
+    systemd.enable = true;
+    settings = {
       # This is an example Hyprland config file for Nix.
       # Refer to the wiki for more information.
       # https://wiki.hypr.land/Configuring/
@@ -34,23 +36,25 @@
 
       # Set programs that you use
 
-      "$terminal" = "alacritty";
-      "$fileManager" = "nautilus";
+      "$terminal" = "kitty";
+      "$fileManager" = "kitty yazi";
       "$menu" = "rofi -show";
 
 
       #################
-      ### AUTAUTOSTARTOSTART ###
+      ### AUTOSTART ###
       #################
 
       # Autostart necessary processes (like notifications daemons, status bars, etc.)
       # Or execute your favorite apps at launch like this:
 
       "exec-once" = [
+        "hyprlock"
         "wl-paste --type text --watch cliphist store"
         "wl-paste --type image --watch cliphist store"
-        "v2rayN"
-        # "waybar" & hyprpaper & firefox"
+        "waybar"
+        "nm-applet"
+        "blueman-applet" 
       ];
 
 
@@ -98,8 +102,8 @@
 
         border_size = 1;
 
-        "col.active_border" = "rgba(7aa2f7ee) rgba(bb9af7ee) 45deg";
-        "col.inactive_border" = "rgba(565f89aa)";
+        # "col.active_border" = "rgba(7aa2f7ee) rgba(bb9af7ee) 45deg";
+        # "col.inactive_border" = "rgba(565f89aa)";
 
         # Set to true enable resizing windows by clicking and dragging on borders and gaps
         resize_on_border = true;
@@ -124,7 +128,7 @@
           enabled = true;
           range = 4;
           render_power = 3;
-          color = "rgba(1a1a1aee)";
+          # color = "rgba(1a1a1aee)";
         };
 
         # https://wiki.hypr.land/Configuring/Variables/#blur
@@ -215,6 +219,7 @@
         kb_layout = "us,ru";
         kb_variant = "";
         kb_model = "";
+        # kb_options = "caps:swapcase,grp:ctrl_space_toggle,ctrl:swap_lwin_lctl";
         kb_options = "caps:swapcase,grp:ctrl_space_toggle";
         kb_rules = "";
 
@@ -223,11 +228,11 @@
         sensitivity = 0; # -1.0 - 1.0, 0 means no modification.
 
         touchpad = {
-          natural_scroll = true;        # Инверсия скролла (как на Mac)
+          natural_scroll = true;
           disable_while_typing = false;
-          tap-to-click = false;         # Выключает тап по касанию (нужно будет именно вдавливать)
-          clickfinger_behavior = true;  # ВАЖНО: включает режим "1 палец - ЛКМ, 2 пальца - ПКМ"
-          scroll_factor = 0.5;          # Опционально: уменьшить скорость скролла (на маках он бывает слишком резким)
+          tap-to-click = false;
+          clickfinger_behavior = true;
+          scroll_factor = 0.5;
         };
       };
 
@@ -263,7 +268,7 @@
         "$mainMod, SPACE, exec, $menu"
         "$mainMod, P, pseudo," # dwindle
         "$mainMod, S, togglesplit," # dwindle 
-        "$mainMod SHIFT, V, exec, rofi-clipboard"
+        "$mainMod, V, exec, rofi-clipboard"
 
         # Move focus with mainMod + arrow keys
         "$mainMod, H, movefocus, l"
@@ -305,12 +310,6 @@
         # Выбор области и копирование в буфер обмена
         "$mainMod SHIFT, S, exec, grimblast --freeze save area - | swappy -f -"
 
-        "$mainMod, C, exec, hyprctl dispatch sendshortcut CTRL, C, activewindow"
-        "$mainMod, V, exec, hyprctl dispatch sendshortcut CTRL, V, activewindow"
-        "$mainMod, X, exec, hyprctl dispatch sendshortcut CTRL, X, activewindow"
-        "$mainMod, Z, exec, hyprctl dispatch sendshortcut CTRL, Z, activewindow"
-        "$mainMod, A, exec, hyprctl dispatch sendshortcut CTRL, A, activewindow"
-        "$mainMod, S, exec, hyprctl dispatch sendshortcut CTRL, S, activewindow"
       ];
 
       # Move/resize windows with mainMod + LMB/RMB and dragging
@@ -351,47 +350,39 @@
         windowrulev2 = [
         # Example windowrule
         # "float,class:^(kitty)$,title:^(kitty)$"
-        "workspace 10 silent, class:^(v2rayN)$"
-        "float,class:(org.pulseaudio.pavucontrol)"
-        "size 1200 600,class:(org.pulseaudio.pavucontrol)"
-        "float,class:(.blueman-manager-wrapped)"
-        "size 200 400,class:(.blueman-manager-wrapped)"
-       
-
+        # pip
         "float,$pip"
         "pin,$pip"
         "opacity 1.0,$pip"
         "size 355 200,$pip"
         "move 100%-w-40 100%-w-40,$pip"
 
-
-        # Ignore maximize requests from apps. You'll probably like this.
         "suppressevent maximize, class:.*"
 
         # Fix some dragging issues with XWayland
         "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
 
+        # Audio Control
+        "float, class:(org.pulseaudio.pavucontrol)$"
+        "size 800 500, class:^(org.pulseaudio.pavucontrol)$"
+        "center, class:^(org.pulseaudio.pavucontrol)$" # Или move 100%-w-10 50, если хочешь справа сверху
+        "dimaround, class:^(org.pulseaudio.pavucontrol)$" # Затемнить фон вокруг
 
-        "float, class:^(ueberzugpp.*)$"
-        "noborder, class:^(ueberzugpp.*)$"
-        "noshadow, class:^(ueberzugpp.*)$"
-        
-        # 2. Анимация: ВЫКЛЮЧИТЬ ПОЛНОСТЬЮ.
-        # Любое движение создает шлейфы и артефакты при тайлинге
-        "noanim, class:^(ueberzugpp.*)$"
-        
-        # 3. Фокус: запретить перехват ввода
-        "noinitialfocus, class:^(ueberzugpp.*)$"
-        
-        # 4. Внешний вид: запретить блюр САМОЙ КАРТИНКИ
-        # (иначе Hyprland размоет превью, превратив его в кашу или белый квадрат)
-        "noblur, class:^(ueberzugpp.*)$"
-        
-        # 5. Поведение: Игнорировать запросы на полный экран/максимизацию
-        # Это лечит баги, когда картинка пытается занять весь экран при ресайзе
-        "suppressevent maximize, class:^(ueberzugpp.*)$"
-        "suppressevent fullscreen, class:^(ueberzugpp.*)$"
+        # Network Control
+        "float, class:^(nm-connection-editor)$"
+        "size 600 500, class:^(nm-connection-editor)$"
+        "center, class:^(nm-connection-editor)$"
+        "dimaround, class:^(nm-connection-editor)$"
 
+        # Bluetooth Control
+        "float, class:^(.blueman-manager-wrapped)$"
+        "size 600 500, class:^(.blueman-manager-wrapped)$"
+        "center, class:^(.blueman-manager-wrapped)$"
+        "dimaround, class:^(.blueman-manager-wrapped)$"
+
+        # Календарь (если используешь gnome-calendar или подобное по клику на часы)
+        "float, class:^(org.gnome.Calendar)$"
+        "size 800 600, class:^(org.gnome.Calendar)$"
       ];
     };
   };

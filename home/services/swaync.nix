@@ -1,5 +1,5 @@
 {
-	services.swaync = {
+  	services.swaync = {
 		enable = true;
 		
 		# Конфигурация интерфейса (JSON)

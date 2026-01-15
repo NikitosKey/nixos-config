@@ -1,11 +1,11 @@
 # ~/nixos-config/home-manager/home.nix
-{ self, config, inputs, pkgs, ... }:
+{ self, config, inputs, pkgs, nixpkgs, ... }:
 {
   imports = [
     ./packages.nix
 		./programs.nix
 		./services.nix
-		./theming.nix
+    ./theming.nix
   ];
 
   # Основные настройки пользователя

@@ -6,4 +6,8 @@
     extraGroups = [ "wheel" "input" "networkmanager" "audio" "pipewire" "kvm" "fuse" "video" "render" ];
     shell = pkgs.fish;
   };
+
+  users.users.greeter = {
+    extraGroups = [ "video" "render" "input" "tty" ];
+  };
 }

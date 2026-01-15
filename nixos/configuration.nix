@@ -1,5 +1,5 @@
 # ~/nixos-config/nixos/configuration.nix
-{ config, pkgs, lib, self, ... }:
+{ config, pkgs, lib, self, inputs, ... }:
 
 {
   imports = [
@@ -9,7 +9,6 @@
     ./power-management.nix
     ./services.nix
 		./security.nix
-		./environment.nix
   ];
 
 	nix = {
@@ -21,23 +20,28 @@
 		};
 	};
 
-	networking.firewall.checkReversePath = false;
-	networking.firewall.allowedUDPPorts = [ 53 ];
-	networking.firewall.allowedTCPPorts = [ 53 ];
-
-  nixpkgs.config = {
-    allowUnfree = true;
-    allowUnsupportedSystem = true;
+  nixpkgs = {
+    hostPlatform = lib.mkDefault "aarch64-linux";
+    config = {
+      allowUnfree = true;
+      allowUnsupportedSystem = true;
+    };
   };
 
 	programs.nix-ld.enable = true;
+
   i18n.defaultLocale = "ru_RU.UTF-8";
   console = {
-    earlySetup = true;
-    font = "ter-v32n";
+    earlySetup = false;
+    font = "ter-u32n";
     packages = with pkgs; [ terminus_font ];
     keyMap = "ru";
   };
+
+  services.udev.extraRules = ''
+    ACTION=="add", SUBSYSTEM=="graphics", KERNEL=="fb*", RUN+="${pkgs.systemd}/bin/systemctl restart systemd-vconsole-setup"
+    ACTION=="add", SUBSYSTEM=="drm", KERNEL=="card*", RUN+="${pkgs.systemd}/bin/systemctl restart systemd-vconsole-setup"
+  '';
 
   time.timeZone = "Europe/Moscow"; 
   system.stateVersion = "25.11"; 
