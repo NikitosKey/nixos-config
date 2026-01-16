@@ -1,3 +1,0 @@
-{
-  programs.wlogout.enable = true;
-}
