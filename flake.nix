@@ -25,13 +25,16 @@
       url = "github:nix-community/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops-nix = {
+      url = "github:mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, nixpkgs-unstable, home-manager, apple-silicon, nixvim, stylix, ... }@inputs: 
     let
-      system = "aarch64-linux"; # Для твоего M1
+      system = "aarch64-linux";
       
-      # Создаем конфиг с доступом к нестабильным пакетам
       overlay-unstable = final: prev: {
         unstable = import nixpkgs-unstable {
           inherit system;
@@ -40,30 +43,51 @@
       };
     in 
   {
-    nixosConfigurations.macbookpro = nixpkgs.lib.nixosSystem {
-      # stdenv.HostPlatfotm.system = "aarch64-linux";
+    nixosConfigurations = {
+      macbookpro = nixpkgs.lib.nixosSystem {
+        # stdenv.HostPlatfotm.system = "aarch64-linux";
         inherit system;
-
-      specialArgs = { inherit inputs apple-silicon self; };
-      modules = [
-        apple-silicon.nixosModules.default
-        ./nixos/configuration.nix
-        home-manager.nixosModules.home-manager
-        { nixpkgs.overlays = [ overlay-unstable ]; }
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-					home-manager.extraSpecialArgs = { inherit inputs; };
-          home-manager.users.nikitoskey = {
-            imports = [
-             ./home/home.nix
-             nixvim.homeModules.nixvim
-             stylix.homeModules.stylix 
-            ];
-          };
-          home-manager.backupFileExtension = "bkg";
-        }
-      ];
+        specialArgs = { inherit inputs apple-silicon self; };
+        modules = [
+          apple-silicon.nixosModules.default
+          ./hosts/macbookpro/configuration.nix
+          home-manager.nixosModules.home-manager
+          { nixpkgs.overlays = [ overlay-unstable ]; }
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.users.nikitoskey = {
+              imports = [
+               ./user
+              ];
+            };
+            home-manager.backupFileExtension = "bkg";
+          }
+        ];
+      };
+      orangepi = nixpkgs.lib.nixosSystem {
+        # stdenv.HostPlatfotm.system = "aarch64-linux";
+        inherit system;
+        specialArgs = { inherit inputs apple-silicon self; };
+        modules = [
+          ./hosts/orangepi5ultra/configuration.nix
+          home-manager.nixosModules.home-manager
+          { nixpkgs.overlays = [ overlay-unstable ]; }
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.users.nikitoskey = {
+              imports = [
+               ./user
+               nixvim.homeModules.nixvim
+              ];
+            };
+            home-manager.backupFileExtension = "bkg";
+          }
+        ];
+      };
     };
   };
 }
