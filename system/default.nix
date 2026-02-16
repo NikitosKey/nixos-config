@@ -8,6 +8,7 @@
   nix = {
     settings = {
       experimental-features = [ "nix-command" "flakes" ];
+      trusted-users = [ "root" "@wheel" "nikitoskey" ];
       auto-optimise-store = true;
       substitute = true;
       substituters = [

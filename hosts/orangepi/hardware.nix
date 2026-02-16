@@ -17,5 +17,15 @@
 
 	networking = {
 		hostName = "orangepi";
+    networkmanager = {
+      enable = true;
+      wifi.macAddress = "preserve";
+      settings = {
+        main = {
+          rc-manager = "resolvconf";
+        };
+      };
+      dns = "systemd-resolved";
+    };
   };
 }
