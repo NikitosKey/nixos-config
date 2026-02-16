@@ -1,5 +1,5 @@
 # ~/nixos-config/user/default.nix
-{ self, config, inputs, pkgs, nixpkgs, ... }:
+{ self, osConfig, inputs, pkgs, nixpkgs, ... }:
 {
   imports = [
     ./terminal 
@@ -15,5 +15,5 @@
     GRIMBLAST_EDITOR = "swappy";
   };
 
-  home.stateVersion = "25.11";
+  home.stateVersion = osConfig.system.stateVersion;
 }
