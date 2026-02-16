@@ -1,8 +1,7 @@
 {
-  	services.swaync = {
+  services.swaync = {
 		enable = true;
 		
-		# Конфигурация интерфейса (JSON)
 		settings = {
 			positionX = "right";
 			positionY = "top";
@@ -24,11 +23,10 @@
 			hide-on-action = true;
 			script-fail-notify = true;
 			
-			# Структура виджетов в панели
 			widgets = [
 				"title"
 				"dnd"
-				"mpris"          # Управление музыкой
+				"mpris"
 				"notifications"
 			];
 			
@@ -48,104 +46,164 @@
 			};
 		};
 		style = ''
-			@define-color bg #1e1e2e;
-			@define-color text #cdd6f4;
-			@define-color surface #313244;
-			@define-color overlay #45475a;
-			@define-color blue #89b4fa;
-			@define-color red #f38ba8;
-			@define-color green #a6e3a1;
-			@define-color yellow #f9e2af;
-			@define-color mauve #cba6f7;
-			
-			.notification-row {
-				background-color: @surface;
-				border-radius: 20px;
-				border: 2px solid @overlay;
-				margin: 10px;
-				padding: 10px;
-			}
+      scale {
+        margin: 0 7px;
+      }
 
-			.notification {
-				background-color: @surface;
-				border-radius: 20px;
-			}
-			
-			.title {
-				color: @blue;
-				font-size: 1.2rem;
-				font-weight: bold;
-			}
+      scale trough {
+        margin: 0rem 1rem;
+        min-height: 8px;
+        min-width: 70px;
+        border-radius: 12.6px;
+      }
 
-			.app-name {
-				color: @mauve;
-			}
+      trough slider {
+        margin: -10px;
+        border-radius: 12.6px;
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+        transition: all 0.2s ease;
+      }
 
-			.body {
-				color: @text;
-				font-size: 1rem;
-			}
+      trough slider:hover {
+        box-shadow:
+          0 0 2px @base02
+          0 0 8px @base03
+          }
 
-			.control-center {
-				background-color: @bg;
-				border-radius: 20px;
-				border: 2px solid @blue;
-			}
-			
-			.control-center .notification-row {
-				background-color: transparent;
-				border: none;
-			}
+      /* notifications */
 
-			.control-center-dnd {
-				background-color: @surface;
-				border-radius: 15px;
-				margin: 10px;
-			}
-			
-			.control-center-dnd:hover {
-				background-color: @overlay;
-			}
+      .notification-background {
+        box-shadow:
+          0 0 8px 0 rgba(0, 0, 0, 0.8),
+          inset 0 0 0 1px @base02;
+        border-radius: 12.6px;
+        margin: 18px;
+        padding: 0;
+      }
 
-			.control-center .widget-title {
-				color: @text;
-				font-size: 1.1rem;
-				padding: 10px;
-				margin-bottom: 5px;
-			}
-			
-			.control-center .widget-title > button {
-				background-color: @surface;
-				color: @red;
-				border-radius: 12px;
-			}
-			
-			.control-center .widget-title > button:hover {
-				background-color: @red;
-				color: @bg;
-			}
+      .notification-background .notification {
+        padding: 7px;
+        border-radius: 12.6px;
+      }
 
-			/* Стили для плеера Mpris */
-			.widget-mpris {
-					background-color: @surface;
-					padding: 15px;
-					border-radius: 15px;
-					margin: 10px;
-			}
-			.widget-mpris .title {
-					color: @green;
-					font-size: 1.1em;
-			}
-			.widget-mpris .artist {
-					color: @yellow;
-					font-size: 0.9em;
-			}
-			.widget-mpris button {
-					color: @blue;
-			}
-			.widget-mpris button:hover {
-					color: @mauve;
-			}
-		'';
+      .notification-background .notification.critical {
+        box-shadow: inset 0 0 7px 0 $red;
+      }
+
+      .notification .notification-content {
+        margin: 7px;
+      }
+
+      .notification .notification-content overlay {
+        /* icons */
+        margin: 4px;
+      }
+
+      .notification-content .summary {
+      }
+
+      .notification-content .time {
+      }
+
+      .notification-content .body {
+      }
+
+      .notification > *:last-child > * {
+        min-height: 3.4em;
+      }
+
+      .notification-background .close-button {
+        margin: 7px;
+        padding: 2px;
+        border-radius: 6.3px;
+      }
+
+      .notification .notification-action {
+        border-radius: 7px;
+        box-shadow: inset 0 0 0 1px @base02;
+        margin: 4px;
+        padding: 8px;
+        font-size: 0.2rem; /* controls the button size not text size*/
+      }
+
+      .notification progress,
+      .notification trough,
+      .notification progressbar {
+        border-radius: 12.6px;
+        padding: 3px 0;
+      }
+      /* notification group */
+
+      .notification-group {
+        background-color: @base02;
+        border-radius: 7px;
+        opacity: 0.8
+      }
+
+      .notification-group.collapsed {
+        background: none;
+      }
+      .notification-group.expanded {
+        background: none;
+      }
+
+      .notification-group.collapsed .notification-row {
+        background: none;
+      }
+      .notification-group.expanded .notification-row {
+        background: none;
+      }
+
+      /* control center */
+
+      .control-center {
+        box-shadow:
+          0 0 8px 0 rgba(0, 0, 0, 0.8),
+          inset 0 0 0 1px @base01;
+        border-radius: 12.6px;
+        padding: 14px;
+        background: none;
+        background-color: @base00;
+        opacity: 0.9;
+      }
+
+      .control-center .notification-background {
+        border-radius: 7px;
+        box-shadow: inset 0 0 0 1px @base02;
+        margin: 4px 10px;
+      }
+
+      .control-center .notification-background .notification {
+        border-radius: 7px;
+        background-color: transparent;
+      }
+
+      .control-center .notification-background .notification.low {
+        opacity: 0.95
+      }
+
+      .control-center .widget-title > label {
+        font-size: 1.3em;
+      }
+
+      .control-center .widget-title button {
+        border-radius: 7px;
+        box-shadow: inset 0 0 0 1px @base02;
+        padding: 8px;
+      }
+
+      .control-center .notification-group {
+        margin-top: 10px;
+      }
+
+      scrollbar slider {
+        margin: -3px;
+        opacity: 0.8;
+      }
+
+      scrollbar trough {
+        margin: 2px 0;
+      }
+      '';
 	};
 }

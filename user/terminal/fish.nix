@@ -8,14 +8,15 @@
       set fish_greeting # Disable greeting
     '';
     plugins = [
-      # Enable a plugin (here grc for colorized command output) from nixpkgs
       { name = "grc"; src = pkgs.fishPlugins.grc.src; }
     ];
     shellAliases = {
-      # Обновленный алиас для флейков
-      rebuild = "sudo nixos-rebuild switch --flake ~/nixos-config#macbookpro";
-      update = "nix flake update ~/nixos-config";
+      nrbs = "sudo nixos-rebuild switch --flake ~/nixos-config#macbookpro";
+      nrbt = "sudo nixos-rebuild test --flake ~/nixos-config#macbookpro";
+      nfu = "nix flake update ~/nixos-config";
       gc = "sudo nix-collect-garbage -d";
+      nv = "nvim";
+      ssh = "kitten ssh";
     };
   };
 }

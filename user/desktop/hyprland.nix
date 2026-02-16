@@ -4,6 +4,7 @@
     enable = true; 
     systemd.enable = true;
     settings = {
+      # debug.overlay = true;
       # This is an example Hyprland config file for Nix.
       # Refer to the wiki for more information.
       # https://wiki.hypr.land/Configuring/
@@ -25,7 +26,7 @@
       ################
 
       # See https://wiki.hypr.land/Configuring/Monitors/
-      monitor = "eDP-1,3456x2234@60,0x0,2";
+      monitor = "eDP-1,3456x2234@120,0x0,2,vrr,1";
 
 
       ###################
@@ -37,7 +38,7 @@
       # Set programs that you use
 
       "$terminal" = "kitty";
-      "$fileManager" = "kitty yazi";
+      "$fileManager" = "kitty -e yazi";
       "$menu" = "rofi -show";
 
 
@@ -55,6 +56,7 @@
         "waybar"
         "nm-applet"
         "blueman-applet" 
+        # "xembed-sni-proxy"
       ];
 
 
@@ -64,10 +66,10 @@
 
       # See https://wiki.hypr.land/Configuring/Environment-variables/
 
-      env = [
-        "XCURSOR_SIZE,24"
-        "HYPRCURSOR_SIZE,24"
-      ];
+      # env = [
+      #   "XCURSOR_SIZE,24"
+      #   "HYPRCURSOR_SIZE,24"
+      # ];
 
 
       ###################
@@ -206,6 +208,7 @@
         force_default_wallpaper = 0; # Set to 0 or 1 to disable the anime mascot wallpapers
         disable_hyprland_logo = true; # If true disables the random hyprland logo / anime girl background. :(
         focus_on_activate = true;
+        vrr = 1;
       };
 
 
@@ -343,46 +346,24 @@
       # See https://wiki.hypr.land/Configuring/Window-Rules/ for more
       # See https://wiki.hypr.land/Configuring/Workspace-Rules/ for workspace rules
       layerrule =[
-        "blur,alacritty"
-        "animation slide top, rofi"
+        "blur on,match:namespace alacritty"
+        "animation slide top,match:namespace rofi"
       ];
 
-        windowrulev2 = [
-        # Example windowrule
-        # "float,class:^(kitty)$,title:^(kitty)$"
-        # pip
-        "float,$pip"
-        "pin,$pip"
-        "opacity 1.0,$pip"
-        "size 355 200,$pip"
-        "move 100%-w-40 100%-w-40,$pip"
+      windowrule = [
+        "match:class ^$ match:title ^$ match:xwayland 1 match:floating 1, no_focus on"
 
-        "suppressevent maximize, class:.*"
+        "match:title ^(Picture-in-Picture)$, float on"
+        "match:title ^(Picture-in-Picture)$, pin on"
+        "match:title ^(Picture-in-Picture)$, size 400 225"
+        "match:title ^(Picture-in-Picture)$, move (monitor_w-window_w-20) (monitor_h-window_h-20)"
 
-        # Fix some dragging issues with XWayland
-        "nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0"
+        "match:class ^(org.pulseaudio.pavucontrol|nm-connection-editor|.blueman-manager-wrapped|org.gnome.Calendar)$, float on"
+        "match:class ^(org.pulseaudio.pavucontrol|nm-connection-editor|.blueman-manager-wrapped)$, size 700 500"
+        "match:class ^(org.gnome.Calendar)$, size 1400 1000"
+        "match:class ^(org.pulseaudio.pavucontrol|nm-connection-editor|.blueman-manager-wrapped|org.gnome.Calendar)$, center on"
 
-        # Audio Control
-        "float, class:(org.pulseaudio.pavucontrol)$"
-        "size 800 500, class:^(org.pulseaudio.pavucontrol)$"
-        "center, class:^(org.pulseaudio.pavucontrol)$" # Или move 100%-w-10 50, если хочешь справа сверху
-        "dimaround, class:^(org.pulseaudio.pavucontrol)$" # Затемнить фон вокруг
-
-        # Network Control
-        "float, class:^(nm-connection-editor)$"
-        "size 600 500, class:^(nm-connection-editor)$"
-        "center, class:^(nm-connection-editor)$"
-        "dimaround, class:^(nm-connection-editor)$"
-
-        # Bluetooth Control
-        "float, class:^(.blueman-manager-wrapped)$"
-        "size 600 500, class:^(.blueman-manager-wrapped)$"
-        "center, class:^(.blueman-manager-wrapped)$"
-        "dimaround, class:^(.blueman-manager-wrapped)$"
-
-        # Календарь (если используешь gnome-calendar или подобное по клику на часы)
-        "float, class:^(org.gnome.Calendar)$"
-        "size 800 600, class:^(org.gnome.Calendar)$"
+        "match:class .*, suppress_event maximize"
       ];
     };
   };

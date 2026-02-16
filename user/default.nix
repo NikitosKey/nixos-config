@@ -1,26 +1,19 @@
-# ~/nixos-config/home-manager/home.nix
+# ~/nixos-config/user/default.nix
 { self, config, inputs, pkgs, nixpkgs, ... }:
 {
   imports = [
-    ./packages.nix
-		./programs.nix
-		./services.nix
-    ./theming.nix
+    ./terminal 
   ];
 
-  # Основные настройки пользователя
   home.username = "nikitoskey";
   home.homeDirectory = "/home/nikitoskey";
 
-	home.sessionVariables = {
-		NIXOS_OZONE_WL = "1"; 
-		GDK_BACKEND = "wayland,x11";
-	  EDITOR = "nvim";
-		HYPRCURSOR_THEME = "McMojave";
+  home.sessionVariables = {
+    NIXOS_OZONE_WL = "1"; 
+    GDK_BACKEND = "wayland,x11";
+    EDITOR = "nvim";
     GRIMBLAST_EDITOR = "swappy";
-	};
-
-  fonts.fontconfig.enable = true;
+  };
 
   home.stateVersion = "25.11";
 }

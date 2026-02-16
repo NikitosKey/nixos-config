@@ -1,16 +1,25 @@
 # nixos-config/system/default.nix
 { pkgs, inputs, config, lib, ... }: {
   imports = [
-    inputs.stylix.homeManagerModules.stylix
-
     ./users.nix
-    ./packages.nix
+    ./terminal
   ];
 
-	nix = {
-		settings = {
-			experimental-features = [ "nix-command" "flakes" ];
-			auto-optimise-store = true;
+  nix = {
+    settings = {
+      experimental-features = [ "nix-command" "flakes" ];
+      auto-optimise-store = true;
+      substitute = true;
+      substituters = [
+        "https://nix-community.cachix.org"
+        "https://hyprland.cachix.org"
+        "https://yazi.cachix.org"
+      ];
+      trusted-public-keys = [
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+        "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+        "yazi.cachix.org-1:Dcdz63NZKfvUCbDGngQDAZq6kOroIrFoyO064uvLh8k="
+      ];
     };
     gc = {
       automatic = true;
@@ -24,6 +33,10 @@
       allowUnfree = true;
       allowUnsupportedSystem = true;
     };
+  };
+
+  environment.sessionVariables = {
+    EDITOR = "nvim";
   };
 
   i18n.defaultLocale = "ru_RU.UTF-8";

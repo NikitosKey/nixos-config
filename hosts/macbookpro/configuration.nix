@@ -1,22 +1,13 @@
 # hosts/macbookpro/configuration.nix
 { config, pkgs, lib, self, inputs, ... }:
-
 {
   imports = [
     ./hardware.nix
-    ./packages.nix
-    ./users.nix
-    ./power-management.nix
-    ./services.nix
-		./security.nix
   ];
 
 	nix = {
 		settings = {
-			cores = 10;
       extra-platforms = config.boot.binfmt.emulatedSystems;
-	    extra-substituters = [ "https://apple-silicon.cachix.org" ];
-      extra-trusted-public-keys = [ "apple-silicon.cachix.org-1:99u96Qer9uL2vQYvL8m48YjY86YI49a8B8v6YF9Xm7Q=" ];	
     };
 	};
 
@@ -39,14 +30,14 @@
 
   security.rtkit.enable = true;
 
-
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; ([
     brightnessctl 
 		playerctl
     networkmanager-openconnect
     distrobox
     dive
     podman-tui
-  ];
+  ] ++ []);
+
   system.stateVersion = "25.11"; 
 }
