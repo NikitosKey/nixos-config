@@ -12,7 +12,13 @@
       gentium
       
       noto-fonts
-      noto-fonts-emoji
+      noto-fonts-color-emoji
+
+      nerd-fonts.jetbrains-mono
+      nerd-fonts.hack
+      nerd-fonts.fira-code
+      nerd-fonts.fira-mono
+      nerd-fonts.zed-mono
 
       corefonts
     ];

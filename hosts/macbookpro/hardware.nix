@@ -17,7 +17,11 @@
       "net.ipv4.conf.all.rp_filter" = 2;
     };
     kernelModules = [ ];
-    kernelParams = [ "apple_dcp.show_notch=1" ];
+    kernelParams = [
+      "appledrm.show_notch=1" 
+      "appledrm.unstable_edid=1"
+      "appledrm.vrr_hack=1"
+    ];
     extraModulePackages = [ ];
     loader = {
       systemd-boot.enable = true;
@@ -44,13 +48,16 @@
     bluetooth.enable = true;
 	};
 
+  services.resolved.enable = true;
+
 	networking = {
 		hostName = "macbookpro";
+    nameservers = [ "8.8.8.8" "1.1.1.1" ];
     firewall = { 
       checkReversePath = false;
       trustedInterfaces = [ "lo" ];
-      # allowedUDPPorts = [ 53 ];
-      # allowedTCPPorts = [ 53 ];
+      allowedUDPPorts = [ 53 ];
+      allowedTCPPorts = [ 53 ];
       # extraCommands = ''
       #   iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300
       #   iptables -t mangle -A OUTPUT -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300
@@ -68,6 +75,7 @@
           rc-manager = "resolvconf";
         };
       };
+      dns = "systemd-resolved";
     };
 	};
 
@@ -82,5 +90,14 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
-  swapDevices = [ ];
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 100;
+  };
+
+  # swapDevices = [ {
+  #   device = "/var/lib/swapfile";
+  #   size = 16 * 1024;
+  # } ];
 }

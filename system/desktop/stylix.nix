@@ -1,13 +1,20 @@
 # system/desktop/stylix.nix
 { config, inputs, pkgs, lib, ... }:
-
+let
+  wallpaper = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/gytis-ivaskevicius/high-quality-nix-content/master/wallpapers/nix-glow-black.png";
+    sha256 = "sha256-3AG1n3BrjR/iJVqiSZbj/ZeAZG+SB1zpGsTmY/SDFMk=";
+  };
+in
 {
+  imports = [ inputs.stylix.nixosModules.stylix ];
+
   stylix = {
       enable = true;
       autoEnable = true;
 
       base16Scheme = pkgs.lib.mkForce "${pkgs.base16-schemes}/share/themes/onedark-dark.yaml";
-      image = ../assets/wallpapers/nix-glow-black.png; 
+      image = wallpaper;
 
       polarity = "dark";
 
@@ -33,8 +40,8 @@
 
       fonts = {
         monospace = {
-          package = pkgs.nerd-fonts.jetbrains-mono;
-          name = "JetBrainsMono Nerd Font";
+          package = pkgs.nerd-fonts.zed-mono;
+          name = "ZedMono Nerd Font";
         };
         sansSerif = {
           package = pkgs.dejavu_fonts;

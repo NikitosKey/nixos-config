@@ -1,6 +1,9 @@
-{ pkgs, ... }:
-
+{ pkgs, inputs, ... }:
 {
+  imports = [
+    inputs.nixvim.homeModules.nixvim
+  ];
+
   programs.nixvim = {
     enable = true;
 
@@ -25,7 +28,14 @@
     };
 
     plugins = {
+
       lualine.enable = true;
+
+      avante = {
+        enable = true;
+        settings = {
+        };
+      };
       
       web-devicons.enable = true;
 
@@ -35,7 +45,6 @@
           delay = 200; 
           preset = "modern";
           spec = [
-            # --- Твои Leader бинды ---
             { __unkeyed = "<leader>f"; group = "Find (Telescope)"; icon = "🔍"; }
             { __unkeyed = "<leader>c"; group = "Code/LSP"; icon = ""; }
             { __unkeyed = "<leader>e"; group = "Explorer"; icon = "📂"; }
@@ -43,31 +52,23 @@
             { __unkeyed = "<leader>g"; group = "Git"; icon = ""; }
             { __unkeyed = "<leader>u"; group = "UndoTree"; icon = ""; }
 
-            # --- Стандартные Vim префиксы ---
             
-            # Группа g (очень полезно, там LSP переходы, комментарии и т.д.)
             { __unkeyed = "g"; group = "Go / Extended"; icon = "🚀"; }
             
-            # Группа z (фолдинг/сворачивание кода)
             { __unkeyed = "z"; group = "Folds / View"; icon = "📖"; }
             
-            # Квадратные скобки (часто используются для навигации по диагностике)
             { __unkeyed = "["; group = "Prev ..."; icon = "cx"; }
             { __unkeyed = "]"; group = "Next ..."; icon = "cx"; }
 
-            # Регистры (буфер обмена) - нажав ", увидишь список регистров
             { __unkeyed = "\""; group = "Registers"; icon = ""; }
             
-            # Метки (закладки в коде)
             { __unkeyed = "'"; group = "Marks"; icon = ""; }
             
-            # Окна (Ctrl+w) - полезно, если забываешь как разбить экран
             { __unkeyed = "<C-w>"; group = "Window"; icon = "wm"; }
           ];
         };
       };
 
-      # LSP (Language Server Protocol)
       lsp = {
         enable = true;
         servers = {
@@ -75,9 +76,8 @@
           nixd.enable = true;
           cmake.enable = true;
           docker_compose_language_service.enable = true;
-          dockerls.enable = true; # docker_language_server переименован в dockerls в новых версиях
+          dockerls.enable = true;
           html.enable = true;
-          # fish_lsp.enable = true; # Часто вызывает проблемы при сборке, раскомментируй если нужно
           bashls.enable = true;
           autotools_ls.enable = true;
           lua_ls.enable = true;
@@ -105,7 +105,6 @@
 
       };
 
-      # Автодополнение (вместо coq)
       cmp = {
         enable = true;
         autoEnableSources = true;
@@ -130,25 +129,21 @@
       cmp-nvim-lsp.enable = true;
       cmp-path.enable = true;
       cmp-buffer.enable = true;
-      luasnip.enable = true; # Сниппеты
+      luasnip.enable = true;
 
-      # Файловый менеджер
       neo-tree = {
         enable = true;
-        # Все настройки Lua теперь живут внутри settings
         settings = {
-          close_if_last_window = true; # Обрати внимание на snake_case
+          close_if_last_window = true;
           window = {
             position = "float";
             width = 30;
             
-            # Настройки маппингов (клавиш) ВНУТРИ дерева
             mappings = {
               "<ESC>" = "cancel";
               "q" = "close_window";
             };
 
-            # Настройки всплывающего окна
             popup = {
               size = {
                 height = "80%";
@@ -164,7 +159,6 @@
         };
       };
 
-      # Нечеткий поиск (Telescope)
       telescope = {
         enable = true;
         keymaps = {
@@ -176,7 +170,6 @@
       };
 
 
-      # Сессии
       auto-session = {
         enable = true;
         settings = {
@@ -186,7 +179,6 @@
         };
       };
 
-      # Подсветка синтаксиса
       treesitter = {
         enable = true;
         settings = {
@@ -201,16 +193,12 @@
       vim-matchup = {
         enable = true;
         
-        # Интеграция с treesitter (для лучшей точности)
         treesitter.enable = true;
         
         settings = {
           matchup_matchparen_enabled = 1;
           matchup_matchparen_offscreen = {
             method = "popup"; 
-            # Можно настроить цвета или убрать, если мешает
-            # full_width = 1;
-            # highlight = "Normal";
           };
         };
       };
@@ -218,12 +206,10 @@
       treesitter-context = {
         enable = true;
         settings = {
-          max_lines = 3; # Сколько строк контекста показывать максимум
+          max_lines = 3; 
         };
       };
 
-      # Утилиты
-      comments.enable = true;
       lazygit.enable = true;
       
       gitsigns = {
@@ -233,7 +219,6 @@
       
       clipboard-image.enable = true;
       
-      # Терминал
       toggleterm = {
         enable = true;
         settings = {
@@ -249,7 +234,6 @@
 
       dashboard.enable = true;
 
-      # Debug Adapter Protocol
       dap = {
         enable = true;
         signs = {
@@ -262,7 +246,6 @@
       dap-python.enable = true;
       # dap-lldb # Внимание: требует настройки путей, часто проще использовать codelldb через mason или вручную
 
-      # Отключенные плагины (как у тебя в конфиге)
       copilot-lua.enable = true;
       copilot-lsp.enable = true;
       copilot-chat.enable = true;
@@ -277,16 +260,15 @@
       markdown-preview.enable = true;
     }; 
 
-    # Общие горячие клавиши
     keymaps = [
       {
         mode = "n";
         key = "<leader>e";
         action = "<cmd>Neotree toggle<CR>";
-        options.desc = "Toggle Explorer"; # ЭТО покажет which-key
+        options.desc = "Toggle Explorer"; 
       }
       {
-        mode = ["n" "t"]; # Работает и в нормальном режиме, и в режиме терминала
+        mode = ["n" "t"]; 
         key = "<leader>tf";
         action = "<cmd>ToggleTerm direction=float<CR>";
         options.desc = "Toggle Floating Terminal";
