@@ -1,5 +1,9 @@
 { pkgs, lib, ... }: {
 
+  imports = [
+    ./disko.nix
+  ];
+
   boot = {
     loader = {
       grub.enable = lib.mkForce false;

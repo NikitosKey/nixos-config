@@ -98,8 +98,8 @@
           hostname = "orangepi";
           extraModules = [
             disko.nixosModules.disko
-            ./hosts/orangepi/disko.nix
             rk3588.nixosModules.orangepi5ultra
+            ./system/terminal/sshd.nix
             { home-manager.users.nikitoskey = import ./user/terminal; }
           ];
         };
