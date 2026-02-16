@@ -13,10 +13,6 @@
 
   nixpkgs = {
     hostPlatform = lib.mkForce "aarch64-linux";
-    config = {
-      allowUnfree = true;
-      allowUnsupportedSystem = true;
-    };
   };
 
   users.users.nikitoskey.extraGroups = [ "audio" "pipewire" "kvm" "fuse" "video" "render" ];
