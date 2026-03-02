@@ -7,6 +7,7 @@
     nixpkgs-stable.url = "github:NixOS/nixpkgs/release-25.11";
     nixpkgs-mesa.url = "github:NixOS/nixpkgs/c5ae371f1a6a7fd27823";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs";
+    nixpkgs-custom.url = "github:NikitosKey/nixpkgs/lmstudio-aarch64";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -36,70 +37,32 @@
     };
   };
 
-  outputs = { 
-    self, 
-    nixpkgs, 
-    nixpkgs-stable, 
-    nixpkgs-unstable, 
-    home-manager, 
-    apple-silicon, 
-    nixvim, 
-    stylix,
+  outputs = {
+    self,
+    apple-silicon,
     rk3588,
     disko,
-    ... 
-  }@inputs: 
+    ...
+  }@inputs:
     let
-      overlay-unstable = final: prev: {
-        unstable = import nixpkgs-unstable {
-          system = final.stdenv.hostPlatform.system;
-          config.allowUnfree = true;
-        };
-      };
-      overlay-stable = final: prev: {
-        stable = import nixpkgs-stable {
-          system = final.stdenv.hostPlatform.system;
-          config.allowUnfree = true;
-        };
-      };
-      mkSystem = { hostname, extraModules ? [] }: nixpkgs.lib.nixosSystem {
-        specialArgs = { inherit inputs self; };
-        modules = [
-          { 
-            networking.hostName = hostname;
-            nixpkgs.overlays = [ overlay-unstable overlay-stable ];
-          }
-          ./system
-          ./hosts/${hostname}/configuration.nix
-          home-manager.nixosModules.home-manager {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs self; };
-            home-manager.users.nikitoskey = import ./user; 
-            home-manager.backupFileExtension = "bkg";
-          }
-        ] ++ extraModules;
-      };
+      mkSystem = import ./modules/system.nix { inherit inputs self; };
     in {
     nixosConfigurations =  {
         macbookpro = mkSystem {
           hostname = "macbookpro";
+          isLaptop = true;
+          isDesktop = true;
           extraModules = [
             apple-silicon.nixosModules.default
-            ./system/desktop
-            ./system/desktop/asahi-battery.nix
-            ./system/desktop/ios.nix
-            { home-manager.users.nikitoskey = import ./user/desktop; }
           ];
         };
 
         orangepi = mkSystem {
           hostname = "orangepi";
+          isServer = true;
           extraModules = [
             disko.nixosModules.disko
             rk3588.nixosModules.orangepi5ultra
-            ./system/terminal/sshd.nix
-            { home-manager.users.nikitoskey = import ./user/terminal; }
           ];
         };
      };

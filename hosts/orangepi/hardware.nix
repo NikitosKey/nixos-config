@@ -6,6 +6,7 @@
 
   boot = {
     loader = {
+      grub.enable = lib.mkForce false;
       generic-extlinux-compatible = {
         enable = lib.mkForce true;
         useGenerationDeviceTree = true;

@@ -5,6 +5,12 @@
     ./hardware.nix
   ];
 
+  myOptions = {
+    isLaptop = true;
+    isDesktop = true;
+    batteryBackend = "asahi";
+  };
+
 	nix = {
 		settings = {
       extra-platforms = config.boot.binfmt.emulatedSystems;
@@ -27,7 +33,7 @@
   security.rtkit.enable = true;
 
   environment.systemPackages = with pkgs; ([
-    brightnessctl 
+    brightnessctl
 		playerctl
     networkmanager-openconnect
     distrobox
@@ -35,5 +41,5 @@
     podman-tui
   ] ++ []);
 
-  system.stateVersion = "25.11"; 
+  system.stateVersion = "25.11";
 }

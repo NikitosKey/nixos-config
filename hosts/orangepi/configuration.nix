@@ -4,6 +4,9 @@
   imports = [
     ./hardware.nix
   ];
+
+  myOptions.isServer = true;
+
   nixpkgs = {
     hostPlatform = lib.mkForce "aarch64-linux";
   };

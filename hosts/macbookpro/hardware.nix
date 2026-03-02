@@ -51,31 +51,21 @@
   services.resolved.enable = true;
 
 	networking = {
-		hostName = "macbookpro";
     nameservers = [ "8.8.8.8" "1.1.1.1" ];
     firewall = { 
       checkReversePath = false;
       trustedInterfaces = [ "lo" ];
       allowedUDPPorts = [ 53 ];
       allowedTCPPorts = [ 53 ];
-      # extraCommands = ''
-      #   iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300
-      #   iptables -t mangle -A OUTPUT -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1300
-      # '';
     };
 		networkmanager = {
       enable = true;
-      wifi.macAddress = "preserve";
       settings = {
         connectivity = {
           uri = "http://nmcheck.gnome.org/check_network_status.txt";
           interval = 300;
         };
-        main = {
-          rc-manager = "resolvconf";
-        };
       };
-      dns = "systemd-resolved";
     };
 	};
 
@@ -95,9 +85,4 @@
     algorithm = "zstd";
     memoryPercent = 100;
   };
-
-  # swapDevices = [ {
-  #   device = "/var/lib/swapfile";
-  #   size = 16 * 1024;
-  # } ];
 }
