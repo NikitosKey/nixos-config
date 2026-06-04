@@ -39,6 +39,8 @@
     distrobox
     dive
     podman-tui
+    fex
+    muvm
   ] ++ []);
 
   system.stateVersion = "25.11";

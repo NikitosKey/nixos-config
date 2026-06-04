@@ -1,6 +1,6 @@
 # ~/nixos-config/user/packages.nix
 { pkgs, ... }:
-{ 
+{
   home.packages = with pkgs; [
     grc
     zip

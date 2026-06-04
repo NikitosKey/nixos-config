@@ -6,5 +6,7 @@
     vim
     wget
     git
+    nixd
+    nil
   ];
 }

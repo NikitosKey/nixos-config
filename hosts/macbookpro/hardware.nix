@@ -1,4 +1,12 @@
 { config, lib, pkgs, modulesPath, inputs, ... }:
+let
+  # Create a wrapper script that calls FEX wrapped inside muvm.
+  # We use /run/wrappers/bin/muvm because the system wrapper has the 
+  # necessary elevated capabilities/setuid to spawn the microVM.
+  muvm-fex-wrapper = pkgs.writeShellScript "muvm-fex-wrapper" ''
+    exec /run/wrappers/bin/muvm ${pkgs.fex}/bin/FEXInterpreter "$@"
+  '';
+in
 {
   imports =
     [
@@ -26,7 +34,25 @@
     loader = {
       systemd-boot.enable = true;
     };
-    # binfmt.emulatedSystems = [ "x86_64-linux" "i686-linux" ];
+    binfmt = {
+      # emulatedSystems = [ "x86_64-linux" "i686-linux" ];
+      registrations = {
+        "x86_64-linux" = {
+          magicOrExtension = ''\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00'';
+          mask = ''\xff\xff\xff\xff\xff\xfe\xfe\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'';
+          interpreter = toString muvm-fex-wrapper;
+          matchCredentials = true; 
+          fixBinary = false;
+        };
+        "i686-linux" = {
+          magicOrExtension = ''\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x03\x00'';
+          mask = ''\xff\xff\xff\xff\xff\xfe\xfe\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff'';
+          interpreter = toString muvm-fex-wrapper;
+          matchCredentials = true;
+          fixBinary = false;
+        };
+      };
+    };
   };
 
   virtualisation.podman = {
