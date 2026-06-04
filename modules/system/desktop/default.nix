@@ -11,6 +11,6 @@
     ./packages.nix
     ./stylix.nix
     ./udisks2.nix
-    ./v2raya.nix
+    ./happ.nix
   ];
 }
