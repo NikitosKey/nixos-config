@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }: 
+{ pkgs, lib, ... }:
 {
   imports = [
     ./disko.nix
@@ -18,6 +18,7 @@
   virtualisation.docker.storageDriver = "btrfs";
 
 	networking = {
+	  nameservers = [ "8.8.8.8" "1.1.1.1" ];
 		hostName = "orangepi";
     networkmanager = {
       enable = true;
