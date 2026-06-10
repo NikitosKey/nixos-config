@@ -3,13 +3,13 @@
 
 {
   services.frp = {
-    instances."" = {
+    instances.client = {
       enable = true;
       role = "client";
 
       settings = {
         serverAddr = "159.194.214.57";
-        serverPort = 7000;             #
+        serverPort = 7000;
 
         auth = {
           method = "token";
@@ -32,7 +32,7 @@
             name = "minecraft-udp";
             type = "udp";
             localIP = "127.0.0.1";
-            localPort = 25564;
+            localPort = 24454;
             remotePort = 24454;
           }
         ];
