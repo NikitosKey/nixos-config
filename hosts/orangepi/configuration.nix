@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware.nix
+    ../../modules/minecraft.nix
   ];
 
   myOptions.isServer = true;
