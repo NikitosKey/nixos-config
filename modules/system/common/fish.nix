@@ -11,6 +11,7 @@
       ssh = "kitten ssh";
       grbs = "sudo nixos-rebuild switch --flake github:NikitosKey/nixos-config";
       grbt = "sudo nixos-rebuild test --flake github:NikitosKey/nixos-config";
-    }; 
+      mc-console = "sudo nixos-container run minecraft-server -- mcrcon -p 'AHAHAHAH_SOSAL?!' -t";
+    };
   };
 }
