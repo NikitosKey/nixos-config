@@ -18,6 +18,8 @@
 
       nixpkgs.config.allowUnfree = true;
 
+      networking.nameservers = [ "8.8.8.8" "1.1.1.1" ];
+
       users.users.minecraft = {
         isSystemUser = true;
         group = "minecraft";

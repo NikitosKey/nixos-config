@@ -3,6 +3,7 @@
 {
   imports = [
     ./hardware.nix
+    ./frpc.nix
     ../../modules/minecraft.nix
   ];
 
