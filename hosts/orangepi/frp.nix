@@ -1,16 +1,15 @@
-# hosts/orangepi/frpc.nix
+# hosts/orangepi/frc.nix
 { config, pkgs, ... }:
 
 {
   services.frp = {
     enable = true;
-    role = "client";
 
     settings = {
       serverAddr = "159.194.214.57";
       serverPort = 7000;
 
-      auth = {
+    uth = {
         method = "token";
         token = "AHAHAHAH_SOSAL?!";
       };
