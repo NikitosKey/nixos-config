@@ -47,7 +47,7 @@
           WorkingDirectory = "/var/lib/minecraft";
 
           ExecStart = ''
-            ${pkgs.zulu17}/bin/java \
+            ${pkgs.zulu21}/bin/java \
               -Xms10G -Xmx10G \
               -XX:+UseG1GC \
               -XX:+ParallelRefProcEnabled \
