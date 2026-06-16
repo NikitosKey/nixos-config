@@ -14,7 +14,9 @@
       { protocol = "udp"; hostPort = 24454; containerPort = 24454; }
     ];
 
-    config = { config, pkgs, ... }: {
+    config = { config, pkgs, ... }: let
+      serverDir = "/var/lib/minecraft/hbm_1.7.10";
+    in {
 
       nixpkgs.config.allowUnfree = true;
 
@@ -44,31 +46,16 @@
           Type = "simple";
           User = "minecraft";
           Group = "minecraft";
-          WorkingDirectory = "/var/lib/minecraft";
+          WorkingDirectory = serverDir;
 
           ExecStart = ''
-            ${pkgs.zulu21}/bin/java \
-              -Xms10G -Xmx10G \
+            ${pkgs.zulu8}/bin/java \
+              -Xms8G -Xmx10G \
               -XX:+UseG1GC \
-              -XX:+ParallelRefProcEnabled \
-              -XX:MaxGCPauseMillis=200 \
-              -XX:+UnlockExperimentalVMOptions \
-              -XX:+DisableExplicitGC \
-              -XX:+AlwaysPreTouch \
-              -XX:G1NewSizePercent=30 \
-              -XX:G1MaxNewSizePercent=40 \
-              -XX:G1HeapRegionSize=8m \
-              -XX:G1ReservePercent=20 \
-              -XX:G1HeapWastePercent=5 \
-              -XX:G1MixedGCCountTarget=4 \
-              -XX:InitiatingHeapOccupancyPercent=15 \
-              -XX:G1MixedGCLiveThresholdPercent=90 \
-              -XX:G1RSetUpdatingPauseTimePercent=5 \
-              -XX:SurvivorRatio=32 \
-              -XX:+PerfDisableSharedMem \
-              -XX:MaxTenuringThreshold=1 \
-              -jar fabric-server-launch.jar nogui
-          '';
+              -XX:MaxGCPauseMillis=50 \
+              -javaagent:authlib-injector.jar=ely.by \
+              -jar forge-1.7.10-universal.jar nogui
+                '';
 
           Restart = "always";
           TimeoutStopSec = "60";
@@ -83,12 +70,12 @@
           Group = "minecraft";
         };
         script = ''
-          BACKUP_DIR="/var/lib/minecraft/backups"
+          BACKUP_DIR="${serverDir}/backups"
           mkdir -p "$BACKUP_DIR"
 
           DATE=$(${pkgs.coreutils}/bin/date +%Y-%m-%d_%H-%M-%S)
           echo "Starting backup of minecraft world..."
-          ${pkgs.gnutar}/bin/tar -czf "$BACKUP_DIR/world_$DATE.tar.gz" -C /var/lib/minecraft world
+          ${pkgs.gnutar}/bin/tar -czf "$BACKUP_DIR/world_$DATE.tar.gz" -C "${serverDir}" world
           echo "Backup created: world_$DATE.tar.gz"
 
           ${pkgs.findutils}/bin/find "$BACKUP_DIR" -name "world_*.tar.gz" -mtime +7 -delete
