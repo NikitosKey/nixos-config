@@ -125,15 +125,33 @@ let
         # ── Auth helpers ───────────────────────────────────────────────────
 
         def _dual_has_joined(self):
+            print(f"[mc-auth] hasJoined: {self.path}", flush=True)
             # 1. Try Ely.by
             status, body, ct = self._get(ELY_BASE + self.path)
+            print(f"[mc-auth] Ely.by -> {status} ({len(body)}b)", flush=True)
             if status == 200:
                 return self._respond(200, body, ct)
             # 2. Fall back to Mojang
-            status, body, ct = self._get(MOJANG_SESSION + self.path)
+            # authlib-injector rewrites /session/minecraft/hasJoined → /sessionserver/session/...
+            # but sessionserver.mojang.com expects /session/... (no /sessionserver/ prefix)
+            mojang_path = self.path.replace("/sessionserver/", "/", 1)
+            status, body, ct = self._get(MOJANG_SESSION + mojang_path)
+            print(f"[mc-auth] Mojang -> {status} ({len(body)}b)", flush=True)
             if status == 200:
+                # Strip Mojang texture signatures: authlib-injector verifies with Ely.by's
+                # public key, so Mojang-signed properties would fail signature check
+                try:
+                    profile = json.loads(body)
+                    for prop in profile.get("properties", []):
+                        prop.pop("signature", None)
+                    body = json.dumps(profile).encode()
+                    ct = "application/json"
+                    print(f"[mc-auth] Mojang profile OK, id={profile.get('id')}", flush=True)
+                except Exception as e:
+                    print(f"[mc-auth] Profile parse error: {e}", flush=True)
                 return self._respond(200, body, ct)
             # Both failed → auth denied
+            print("[mc-auth] Both providers failed, returning 204", flush=True)
             self.send_response(204); self.end_headers()
 
         def _dual_profiles(self):
@@ -182,8 +200,11 @@ let
         def _respond(self, status, body, ct):
             self.send_response(status)
             self.send_header("Content-Type", ct)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Connection", "close")
             self.end_headers()
             self.wfile.write(body)
+            self.wfile.flush()
 
         def log_message(self, fmt, *args):
             print(f"[mc-auth] {self.address_string()} {fmt % args}", flush=True)
