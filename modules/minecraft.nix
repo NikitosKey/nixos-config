@@ -4,6 +4,84 @@ let
   serverDir = "/var/lib/minecraft/hbm_1.7.10";
   rconPassword = "AHAHAHAH_SOSAL?!";
   authProxyPort = 8901;
+  containerWhitelist = "/var/lib/nixos-containers/minecraft-server${serverDir}/whitelist.json";
+
+  # Whitelist helper: fetches UUID from a specific auth provider and writes
+  # it directly to whitelist.json, then reloads via mcrcon.
+  # Usage: mc-wl [--ely|--mojang] <NickName>
+  mcWlScript = pkgs.writeScript "mc-wl" ''
+    #!${pkgs.python3}/bin/python3
+    import sys, json, urllib.request, subprocess
+
+    WHITELIST = "${containerWhitelist}"
+    RCON_PASS = "${rconPassword}"
+
+    ELY_URL    = "https://account.ely.by/api/authlib-injector/api/profiles/minecraft"
+    MOJANG_URL = "https://api.mojang.com/profiles/minecraft"
+
+    def fmt_uuid(u):
+        return f"{u[:8]}-{u[8:12]}-{u[12:16]}-{u[16:20]}-{u[20:]}"
+
+    def lookup(url, nick):
+        try:
+            req = urllib.request.Request(
+                url, data=json.dumps([nick]).encode(),
+                headers={"Content-Type": "application/json"}, method="POST")
+            r = urllib.request.urlopen(req, timeout=5)
+            data = json.loads(r.read())
+            if data:
+                return data[0]["id"], data[0]["name"]
+        except Exception:
+            pass
+        return None, None
+
+    provider, nick = "auto", None
+    for arg in sys.argv[1:]:
+        if arg == "--ely":    provider = "ely"
+        elif arg == "--mojang": provider = "mojang"
+        else: nick = arg
+
+    if not nick:
+        print("Usage: mc-wl [--ely|--mojang] <NickName>")
+        sys.exit(1)
+
+    uid = name = found_on = None
+
+    if provider in ("ely", "auto"):
+        uid, name = lookup(ELY_URL, nick)
+        if uid: found_on = "Ely.by"
+
+    if not uid and provider in ("mojang", "auto"):
+        uid, name = lookup(MOJANG_URL, nick)
+        if uid: found_on = "Mojang"
+
+    if not uid:
+        src = "Ely.by or Mojang" if provider == "auto" else provider
+        print(f"Not found on {src}: {nick}")
+        sys.exit(1)
+
+    formatted = fmt_uuid(uid)
+
+    with open(WHITELIST) as f:
+        wl = json.load(f)
+
+    if any(e["uuid"] == formatted for e in wl):
+        print(f"{name} already whitelisted ({found_on}, {formatted})")
+        sys.exit(0)
+
+    wl.append({"uuid": formatted, "name": name})
+    with open(WHITELIST, "w") as f:
+        json.dump(wl, f, indent=2)
+
+    print(f"Added {name}  [{found_on}]  {formatted}")
+
+    subprocess.run([
+        "nixos-container", "run", "minecraft-server", "--",
+        "mcrcon", "-H", "127.0.0.1", "-P", "25575", "-p", RCON_PASS,
+        "whitelist reload"
+    ], capture_output=True)
+    print("Whitelist reloaded.")
+  '';
 
   # Dual-auth proxy: tries Ely.by first, falls back to Mojang.
   # Implements the minimal Yggdrasil session API that authlib-injector needs.
@@ -114,11 +192,23 @@ let
   '';
 in
 {
-  # Fish aliases live here — only meaningful when this module is imported
+  # Fish aliases + functions — only meaningful when this module is imported
   programs.fish.shellAliases = {
     mc-console = "sudo nixos-container run minecraft-server -- mcrcon -p '${rconPassword}' -t";
-    mc-log = "TERM=xterm-256color sudo nixos-container run minecraft-server -- journalctl -u minecraft-server -f -n 100";
+    mc-log     = "TERM=xterm-256color sudo nixos-container run minecraft-server -- journalctl -u minecraft-server -f -n 100";
   };
+
+  # mc-wl NickName          — auto (Ely.by first, Mojang fallback)
+  # mc-wl --ely NickName    — force Ely.by UUID
+  # mc-wl --mojang NickName — force Mojang UUID
+  #
+  # Bypasses the proxy and writes UUID directly to whitelist.json,
+  # then reloads whitelist via mcrcon — so the chosen provider wins.
+  programs.fish.interactiveShellInit = ''
+    function mc-wl
+      sudo ${mcWlScript} $argv
+    end
+  '';
 
   networking.firewall = {
     allowedTCPPorts = [ 25565 ];
