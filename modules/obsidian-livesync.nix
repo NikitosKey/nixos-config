@@ -72,7 +72,7 @@
       EnvironmentFile = "/etc/duckdns/token";
       ExecStart = pkgs.writeShellScript "duckdns-update" ''
         ${pkgs.curl}/bin/curl -s \
-          "https://www.duckdns.org/update?domains=sosalfs,sosalnc,sosalph&token=$DUCKDNS_TOKEN&ip=" \
+          "https://www.duckdns.org/update?domains=sosalfs,sosalnc,sosalph,sosalmu&token=$DUCKDNS_TOKEN&ip=" \
           -o /tmp/duckdns.log
         cat /tmp/duckdns.log
       '';

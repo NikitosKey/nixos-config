@@ -7,6 +7,7 @@
     ../../modules/obsidian-livesync.nix
     ../../modules/nextcloud.nix
     ../../modules/immich.nix
+    ../../modules/navidrome.nix
   ];
 
   myOptions.isServer = true;
