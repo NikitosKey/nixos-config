@@ -8,6 +8,7 @@
     ../../modules/nextcloud.nix
     ../../modules/immich.nix
     ../../modules/navidrome.nix
+    ../../modules/xray.nix
   ];
 
   myOptions.isServer = true;
