@@ -28,14 +28,14 @@
   };
 
   # Записываем пароль из SOPS в local.d/admins.ini перед стартом CouchDB
-  systemd.services.couchdb.serviceConfig.ExecStartPre = lib.mkBefore [
+  systemd.services.couchdb.serviceConfig.ExecStartPre = lib.mkAfter [
     ("+${pkgs.writeShellScript "couchdb-set-admin" ''
-      mkdir -p /var/lib/couchdb/local.d
-      printf '[admins]\nadmin = %s\n' \
-        "$(cat ${config.sops.secrets."couchdb/admin_password".path})" \
-        > /var/lib/couchdb/local.d/admins.ini
-      chown couchdb:couchdb /var/lib/couchdb/local.d/admins.ini
-      chmod 600 /var/lib/couchdb/local.d/admins.ini
+      LOCAL_INI=/var/lib/couchdb/local.ini
+      PASS=$(cat ${config.sops.secrets."couchdb/admin_password".path})
+      # удаляем старую секцию [admins] если есть, добавляем свежую
+      sed -i '/^\[admins\]/,/^\[/{/^\[admins\]/d;/^admin\s*=/d}' "$LOCAL_INI" 2>/dev/null || true
+      printf '\n[admins]\nadmin = %s\n' "$PASS" >> "$LOCAL_INI"
+      chown couchdb:couchdb "$LOCAL_INI"
     ''}")
   ];
 
