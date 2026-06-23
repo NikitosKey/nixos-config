@@ -9,5 +9,7 @@
       else "/var/lib/sops-nix/key.txt";
     
     secrets."user/password" = { neededForUsers = true; };
+    secrets."user/ssh_key" = { mode = "0444"; };
+    secrets."couchdb/admin_password" = { owner = "couchdb"; };
   };
 }

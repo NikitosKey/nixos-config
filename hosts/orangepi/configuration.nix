@@ -3,8 +3,8 @@
 {
   imports = [
     ./hardware.nix
-    ./frpc.nix
     ../../modules/minecraft.nix
+    ../../modules/obsidian-livesync.nix
   ];
 
   myOptions.isServer = true;
