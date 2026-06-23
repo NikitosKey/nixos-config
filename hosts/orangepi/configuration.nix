@@ -5,6 +5,7 @@
     ./hardware.nix
     ../../modules/minecraft.nix
     ../../modules/obsidian-livesync.nix
+    ../../modules/nextcloud.nix
   ];
 
   myOptions.isServer = true;

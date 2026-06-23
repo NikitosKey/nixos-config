@@ -11,5 +11,6 @@
     secrets."user/password" = { neededForUsers = true; };
     secrets."user/ssh_key" = { mode = "0444"; };
     secrets."couchdb/admin_password" = { owner = "couchdb"; };
+    secrets."nextcloud/admin_password" = { owner = "nextcloud"; };
   };
 }
