@@ -152,4 +152,5 @@ in
   };
 
   networking.firewall.allowedTCPPorts = [ 10808 10809 ];
+  networking.firewall.interfaces."podman0".allowedTCPPorts = [ 10808 10809 ];
 }

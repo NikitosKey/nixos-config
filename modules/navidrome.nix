@@ -1,6 +1,14 @@
 { config, ... }:
 
 {
+  sops.secrets."lastfm/api_key" = {};
+  sops.secrets."lastfm/secret"  = {};
+
+  sops.templates."navidrome-lastfm.env".content = ''
+    ND_LASTFM_APIKEY=${config.sops.placeholder."lastfm/api_key"}
+    ND_LASTFM_SECRET=${config.sops.placeholder."lastfm/secret"}
+  '';
+
   virtualisation.oci-containers.backend = "podman";
 
   virtualisation.oci-containers.containers.navidrome = {
@@ -10,11 +18,15 @@
       "/var/lib/navidrome/data:/data"
       "/var/lib/navidrome/music:/music:ro"
     ];
+    environmentFiles = [ config.sops.templates."navidrome-lastfm.env".path ];
     environment = {
       ND_MUSICFOLDER = "/music";
       ND_DATAFOLDER = "/data";
       ND_LOGLEVEL = "info";
       ND_LASTFM_ENABLED = "true";
+      HTTP_PROXY  = "socks5://10.88.0.1:10808";
+      HTTPS_PROXY = "socks5://10.88.0.1:10808";
+      NO_PROXY    = "localhost,127.0.0.1";
     };
   };
 
