@@ -49,6 +49,11 @@ let
     inbounds.append(tun_inbound)
     selected["inbounds"] = inbounds
 
+    # Make inbounds listen on all interfaces so podman/LAN can reach them
+    for ib in selected.get("inbounds", []):
+        if ib.get("listen") == "127.0.0.1":
+            ib["listen"] = "0.0.0.0"
+
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     with open(config_path, "w") as f:
         json.dump(selected, f, ensure_ascii=False, indent=2)
@@ -56,14 +61,14 @@ let
     print(f"\nSwitched to: {selected.get('remarks', 'Server ' + str(choice))}")
   '';
 
-  xray-switch = pkgs.writeShellScriptBin "xray-switch" ''
+  xray-switch = pkgs.writeShellScriptBin "xray" ''
     set -e
     SUB_URL=$(cat ${config.sops.secrets."remnawave/sub_url".path})
     CONFIG_PATH=/etc/xray/config.json
     TMPJSON=$(mktemp /tmp/xray-sub-XXXXXX.json)
     trap "rm -f $TMPJSON" EXIT
 
-    ACTION="''${1:-switch}"
+    ACTION="''${1:-pick}"
 
     case "$ACTION" in
       update)
@@ -73,10 +78,16 @@ let
         echo "Done. Xray restarted with AUTO routing."
         ;;
 
-      switch)
+      pick)
         echo "Fetching server list..."
         ${pkgs.curl}/bin/curl -sf --max-time 15 "$SUB_URL/json" -o "$TMPJSON"
         ${pkgs.python3}/bin/python3 ${xray-select} "$CONFIG_PATH" "$TMPJSON" "''${2:-}"
+        systemctl restart xray
+        echo "Xray restarted."
+        ;;
+
+      edit)
+        ''${EDITOR:-nano} "$CONFIG_PATH"
         systemctl restart xray
         echo "Xray restarted."
         ;;
@@ -86,10 +97,11 @@ let
         ;;
 
       *)
-        echo "Usage: xray-switch [update|switch [N]|status]"
-        echo "  update      - fetch fresh config (AUTO routing)"
-        echo "  switch [N]  - pick a specific server"
-        echo "  status      - show service status"
+        echo "Usage: xray [update|pick [N]|edit|status]"
+        echo "  update    - fetch fresh config (AUTO routing)"
+        echo "  pick [N]  - pick a specific server"
+        echo "  edit      - edit config in \$EDITOR and restart"
+        echo "  status    - show service status"
         ;;
     esac
   '';
@@ -98,7 +110,7 @@ in
 {
   sops.secrets."remnawave/sub_url" = {};
 
-  environment.systemPackages = [ xray-switch pkgs.xray ];
+  environment.systemPackages = [ xray-switch ];
 
   systemd.services.xray = {
     description = "Xray proxy";
@@ -113,8 +125,22 @@ in
         fi
       '';
       ExecStart = "${pkgs.xray}/bin/xray run -config /etc/xray/config.json";
-      Restart = "on-failure";
-      RestartSec = "5s";
+      ExecStopPost = pkgs.writeShellScript "xray-cleanup" ''
+        # Удаляем TUN-интерфейс и ip rules, которые xray оставил после себя.
+        # Без этого после падения xray весь трафик уходит в никуда (роуты висят,
+        # интерфейса нет) и интернет пропадает до перезапуска сервиса.
+        ${pkgs.iproute2}/bin/ip link delete xray0 2>/dev/null || true
+        # Удаляем policy-routing rules с приоритетом < 100 (xray добавляет их сам).
+        # Системные rules (main=32766, default=32767, local=32765) остаются нетронутыми.
+        ${pkgs.iproute2}/bin/ip rule list \
+          | ${pkgs.gawk}/bin/awk -F: '$1+0 < 100 {print $1+0}' \
+          | while read pref; do
+              ${pkgs.iproute2}/bin/ip rule del pref "$pref" 2>/dev/null || true
+            done
+      '';
+      Restart = "always";
+      RestartSec = "2s";
+      StartLimitBurst = 0;
       AmbientCapabilities = [ "CAP_NET_ADMIN" "CAP_NET_BIND_SERVICE" ];
       CapabilityBoundingSet = [ "CAP_NET_ADMIN" "CAP_NET_BIND_SERVICE" ];
     };
@@ -125,7 +151,7 @@ in
     after = [ "network.target" "sops-nix.service" ];
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${xray-switch}/bin/xray-switch update";
+      ExecStart = "${xray-switch}/bin/xray update";
     };
   };
 
