@@ -1,6 +1,8 @@
 { config, ... }:
 
 {
+  myOptions.duckdns.domains = [ "sosalmu" ];
+
   sops.secrets."lastfm/api_key" = {};
   sops.secrets."lastfm/secret"  = {};
 

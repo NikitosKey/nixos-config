@@ -39,5 +39,10 @@ with lib;
       default = "none";
       description = "Battery management backend to use";
     };
+
+    duckdns.domains = mkOption {
+      type = types.listOf types.str;
+      default = [];
+    };
   };
 }

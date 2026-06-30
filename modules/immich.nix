@@ -1,6 +1,8 @@
 { config, ... }:
 
 {
+  myOptions.duckdns.domains = [ "sosalph" ];
+
   services.immich = {
     enable = true;
     host = "127.0.0.1";

@@ -63,30 +63,7 @@
     };
   };
 
-  # Автообновление IP на DuckDNS каждые 5 минут
-  # Токен кладёшь в /etc/duckdns/token в формате: DUCKDNS_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-  systemd.services.duckdns-update = {
-    description = "Update DuckDNS IP for sosalfs";
-    serviceConfig = {
-      Type = "oneshot";
-      EnvironmentFile = "/etc/duckdns/token";
-      ExecStart = pkgs.writeShellScript "duckdns-update" ''
-        ${pkgs.curl}/bin/curl -s \
-          "https://www.duckdns.org/update?domains=sosalfs,sosalnc,sosalph,sosalmu&token=$DUCKDNS_TOKEN&ip=" \
-          -o /tmp/duckdns.log
-        cat /tmp/duckdns.log
-      '';
-    };
-  };
-
-  systemd.timers.duckdns-update = {
-    wantedBy = [ "timers.target" ];
-    timerConfig = {
-      OnBootSec = "1min";
-      OnUnitActiveSec = "5min";
-      Persistent = true;
-    };
-  };
+  myOptions.duckdns.domains = [ "sosalfs" ];
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
 }
