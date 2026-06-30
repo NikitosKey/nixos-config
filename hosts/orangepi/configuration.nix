@@ -3,7 +3,9 @@
 {
   imports = [
     ./hardware.nix
+    ../../modules/duckdns.nix
     ../../modules/minecraft.nix
+    ../../modules/modpack.nix
     ../../modules/obsidian-livesync.nix
     ../../modules/nextcloud.nix
     ../../modules/immich.nix

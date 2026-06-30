@@ -73,14 +73,15 @@ let
     case "$ACTION" in
       update)
         echo "Fetching config from Remnawave..."
-        ${pkgs.curl}/bin/curl -sf --max-time 15 "$SUB_URL/json" -o "$CONFIG_PATH"
+        ${pkgs.curl}/bin/curl -sf --noproxy '*' --max-time 15 "$SUB_URL/json" -o "$TMPJSON"
+        ${pkgs.python3}/bin/python3 ${xray-select} "$CONFIG_PATH" "$TMPJSON" "1"
         systemctl restart xray
-        echo "Done. Xray restarted with AUTO routing."
+        echo "Done. Xray restarted (server 1)."
         ;;
 
       pick)
         echo "Fetching server list..."
-        ${pkgs.curl}/bin/curl -sf --max-time 15 "$SUB_URL/json" -o "$TMPJSON"
+        ${pkgs.curl}/bin/curl -sf --noproxy '*' --max-time 15 "$SUB_URL/json" -o "$TMPJSON"
         ${pkgs.python3}/bin/python3 ${xray-select} "$CONFIG_PATH" "$TMPJSON" "''${2:-}"
         systemctl restart xray
         echo "Xray restarted."
@@ -92,15 +93,21 @@ let
         echo "Xray restarted."
         ;;
 
+      stop)
+        systemctl stop xray
+        echo "Xray stopped."
+        ;;
+
       status)
         systemctl status xray --no-pager -l
         ;;
 
       *)
-        echo "Usage: xray [update|pick [N]|edit|status]"
+        echo "Usage: xray [update|pick [N]|edit|stop|status]"
         echo "  update    - fetch fresh config (AUTO routing)"
         echo "  pick [N]  - pick a specific server"
         echo "  edit      - edit config in \$EDITOR and restart"
+        echo "  stop      - stop xray and clear proxy vars from shell"
         echo "  status    - show service status"
         ;;
     esac
@@ -121,7 +128,11 @@ in
         CONFIG=/etc/xray/config.json
         if [ ! -f "$CONFIG" ]; then
           SUB_URL=$(cat ${config.sops.secrets."remnawave/sub_url".path})
-          ${pkgs.curl}/bin/curl -sf --max-time 15 "$SUB_URL/json" -o "$CONFIG" || true
+          TMPJSON=$(mktemp /tmp/xray-init-XXXXXX.json)
+          ${pkgs.curl}/bin/curl -sf --noproxy '*' --max-time 15 "$SUB_URL/json" -o "$TMPJSON" \
+            && ${pkgs.python3}/bin/python3 ${xray-select} "$CONFIG" "$TMPJSON" "1" \
+            || true
+          rm -f "$TMPJSON"
         fi
       '';
       ExecStart = "${pkgs.xray}/bin/xray run -config /etc/xray/config.json";
@@ -179,4 +190,20 @@ in
 
   networking.firewall.allowedTCPPorts = [ 10808 10809 ];
   networking.firewall.interfaces."podman0".allowedTCPPorts = [ 10808 10809 ];
+
+  # Fish-обёртка: `xray stop` дополнительно чистит прокси-переменные из текущей сессии.
+  # Дочерний скрипт не может менять env родительской оболочки, поэтому нужна fish-функция.
+  programs.fish.interactiveShellInit = ''
+    function xray
+      if test "$argv[1]" = "stop"
+        sudo ${xray-switch}/bin/xray stop
+        set -ge http_proxy
+        set -ge https_proxy
+        set -ge HTTP_PROXY
+        set -ge HTTPS_PROXY
+      else
+        sudo ${xray-switch}/bin/xray $argv
+      end
+    end
+  '';
 }
