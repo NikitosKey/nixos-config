@@ -22,17 +22,21 @@ let
     def fmt_uuid(u):
         return f"{u[:8]}-{u[8:12]}-{u[12:16]}-{u[16:20]}-{u[20:]}"
 
+    # urllib не умеет socks5-прокси из http_proxy/https_proxy (их выставляет
+    # xray-модуль на всю систему), поэтому ходим напрямую, минуя прокси.
+    no_proxy_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
     def lookup(url, nick):
         try:
             req = urllib.request.Request(
                 url, data=json.dumps([nick]).encode(),
                 headers={"Content-Type": "application/json"}, method="POST")
-            r = urllib.request.urlopen(req, timeout=5)
+            r = no_proxy_opener.open(req, timeout=5)
             data = json.loads(r.read())
             if data:
                 return data[0]["id"], data[0]["name"]
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  lookup failed ({url.split('/')[2]}): {e}", file=sys.stderr)
         return None, None
 
     provider, nick = "auto", None
