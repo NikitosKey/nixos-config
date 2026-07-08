@@ -120,6 +120,10 @@ let
             ${pkgs.iproute2}/bin/ip rule del pref "$pref" 2>/dev/null || true
           done
     fi
+
+    # Восстанавливаем DNS: xray TUN перехватывает DNS-трафик, после его остановки
+    # systemd-resolved нужно перезапустить чтобы stub-resolver (127.0.0.53) снова работал.
+    systemctl restart systemd-resolved 2>/dev/null || true
   '';
 
   xray-switch = pkgs.writeShellScriptBin "xray" ''
@@ -253,6 +257,15 @@ in
       end
     end
   '';
+
+  # systemd-resolved делает /etc/resolv.conf → 127.0.0.53 (stub, всегда доступен).
+  # xray TUN перехватывает трафик к внешним DNS, но localhost недостижимым не сделает.
+  # Без этого после xray stop DNS умирает до перезапуска сети.
+  services.resolved = {
+    enable = true;
+    fallbackDns = [ "1.1.1.1" "8.8.8.8" "2606:4700:4700::1111" ];
+    dnssec = "false";
+  };
 
   boot.kernel.sysctl = {
     "net.ipv4.ip_forward" = 1;
