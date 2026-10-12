@@ -10,6 +10,7 @@
     ../../modules/nextcloud.nix
     ../../modules/immich.nix
     ../../modules/navidrome.nix
+    ../../modules/gbpreview.nix
     ../../modules/xray.nix
   ];
 
