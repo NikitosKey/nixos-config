@@ -13,26 +13,30 @@ let
       cp -r dist node_modules package.json $out/
     '';
   };
+
+  gbPreviewImage = pkgs.dockerTools.buildLayeredImage {
+    name = "gbpreview-site";
+    tag = "latest";
+    contents = [ pkgs.nodejs_22 gbPreviewSite ];
+    config = {
+      Cmd = [ "${pkgs.nodejs_22}/bin/node" "${gbPreviewSite}/dist/server/entry.mjs" ];
+      Env = [
+        "NODE_ENV=production"
+        "HOST=0.0.0.0"
+        "PORT=4321"
+      ];
+      ExposedPorts = { "4321/tcp" = {}; };
+    };
+  };
 in
 {
   myOptions.duckdns.domains = [ "gbpreview" ];
 
-  systemd.services.gbpreview-site = {
-    description = "Garant Bezopasnosti preview site";
-    wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
-    serviceConfig = {
-      DynamicUser = true;
-      WorkingDirectory = "${gbPreviewSite}";
-      Environment = [
-        "NODE_ENV=production"
-        "HOST=127.0.0.1"
-        "PORT=4321"
-      ];
-      ExecStart = "${pkgs.nodejs_22}/bin/node ${gbPreviewSite}/dist/server/entry.mjs";
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
+  virtualisation.oci-containers.backend = "podman";
+  virtualisation.oci-containers.containers.gbpreview = {
+    image = "gbpreview-site:latest";
+    imageFile = gbPreviewImage;
+    ports = [ "127.0.0.1:4321:4321" ];
   };
 
   services.nginx.virtualHosts."gbpreview.duckdns.org" = {
